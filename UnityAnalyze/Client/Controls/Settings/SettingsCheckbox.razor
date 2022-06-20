@@ -1,0 +1,29 @@
+﻿<div class="form-group row">
+		<label class="col-lg-3 col-form-label pt-0">@Label <span class="text-danger">*</span></label>
+		<div class="col-lg-9">
+			<label class="custom-control custom-checkbox">
+				<input @bind="@Value" @oninput="@OnInputChange" type="checkbox" class="custom-control-input" name="single_styled_checkbox">
+				<span class="custom-control-label">@Param</span>
+			</label>
+		</div>
+	</div>
+
+@code {
+	[Parameter]
+	public bool Value { get; set; }
+	
+	[Parameter]
+	public string Label { get; set; }
+	
+	[Parameter]
+	public string Param { get; set; }
+	
+	[Parameter]
+	public EventCallback<bool> ValueChanged { get; set; }
+
+	private async Task OnInputChange(ChangeEventArgs args )
+	{
+		Value = (bool)args.Value;
+		await ValueChanged.InvokeAsync(Value);
+	}
+}

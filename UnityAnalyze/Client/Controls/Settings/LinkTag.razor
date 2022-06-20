@@ -1,0 +1,15 @@
+﻿<a href="@goTo" class="@Class"><i class="@IconClass"></i>@Text</a>
+
+@code {
+    [Parameter]
+    public string goTo { get; set; }
+    
+    [Parameter]
+    public string Class { get; set; } = "btn btn-primary";
+    
+    [Parameter]
+    public string IconClass { get; set; }
+    
+    [Parameter]
+    public string Text { get; set; }
+}

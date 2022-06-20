@@ -1,0 +1,34 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@typeparam TItem
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">@Header</h5>
+    </div>
+
+    <div class="card-body">
+        <EditForm class="form-validate-jquery" Model="@Model" OnValidSubmit="Callback">
+            <DataAnnotationsValidator />
+                @Body
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter, AllowNull]
+    public TItem Model { get; set; }
+    
+    [Parameter]
+    public RenderFragment Body { get; set; }
+    
+    [Parameter]
+    public string Header { get; set; }
+    
+    [Parameter]
+    public EventCallback ValidInput { get; set; }
+    
+    private void Callback()
+    {
+        ValidInput.InvokeAsync();
+    }
+}

@@ -1,0 +1,263 @@
+﻿@page "/game/{Id:int}/monetization"
+@using UnityAnalyze.Client.Infrastructure
+@using System.Globalization
+@using UnityAnalyze.Shared.ActionResult
+@using UnityAnalyze.Shared.Dtos
+@inject HttpMonetizationRepository HttpMonetizationRepository
+@inject IIgniteUIBlazor IgniteUIBlazor
+@inject ActionStatusService ActionStatusService;
+
+@if (_monetizationInfo == null)
+{
+	<SfSpinner Visible="true"></SfSpinner>
+} else
+{
+	<CardContent Header="@_monetizationInfo.GameName">
+	<Body>
+	<button @onclick="Update" class="btn btn-primary">Update</button>
+	</Body>
+</CardContent>
+<CardContent Header="Profit today">
+	<Body>
+	<div class="card-body d-sm-flex align-items-sm-center justify-content-sm-between flex-sm-wrap">
+		<div class="d-flex align-items-center mb-3 mb-sm-0">
+			<div id="campaigns-donut"><svg width="42" height="42"><g transform="translate(21,21)"><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(102, 187, 106);" d="M1.1634144591899855e-15,19A19,19 0 0,1 -14.050144241469582,12.790365389381929L-7.025072120734791,6.3951826946909645A9.5,9.5 0 0,0 5.817072295949927e-16,9.5Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(149, 117, 205);" d="M-14.050144241469582,12.790365389381929A19,19 0 0,1 0.6493373977393208,-18.988900993577726L0.3246686988696604,-9.494450496788863A9.5,9.5 0 0,0 -7.025072120734791,6.3951826946909645Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(255, 112, 67);" d="M0.6493373977393208,-18.988900993577726A19,19 0 0,1 5.817072295949928e-15,19L2.908536147974964e-15,9.5A9.5,9.5 0 0,0 0.3246686988696604,-9.494450496788863Z"></path></g></g></svg></div>
+			<div class="ml-3">
+				<h5 class="font-weight-semibold mb-0">@_monetizationInfo.TotalToday.ToString("F1")$
+					@if (_monetizationInfo.DayDelta > 0)
+					{
+						<span class="text-success font-size-sm font-weight-normal"><i class="icon-arrow-up12"></i> (+@_monetizationInfo.DayDelta.ToString("F1")%)
+						</span>
+					}
+					else
+					{
+						<span class="text-danger font-size-sm font-weight-normal"><i class="icon-arrow-down12"></i> (@_monetizationInfo.DayDelta.ToString("F1")%)
+						</span>
+					}
+				</h5>
+				<span class="badge badge-mark border-success mr-1"></span> <span class="text-muted">Today, @DateTime.Now.ToString("t")</span>
+			</div>
+		</div>
+                
+		<TodayInfo Mark="$" Text="From clicks" Data="@_monetizationInfo.TotalTodayFromClicks.ToString("F1")"></TodayInfo>
+		<TodayInfo Mark="$" Text="From banners" Data="@_monetizationInfo.TotalTodayFromBanners.ToString("F1")"></TodayInfo>
+		<TodayInfo Mark="$" Text="From rewarded videos" Data="@_monetizationInfo.TotalTodayFromVideo.ToString("F1")"></TodayInfo>
+	</div>
+	</Body>
+</CardContent>
+
+<CardContent Header="All time">
+	<Body>
+	<span class="badge badge-mark border-danger mr-1"></span> <span class="text-muted">
+		@_monetizationInfo.Monetizations.First().CheckDate.ToString("d", CultureInfo.CurrentCulture) - @_monetizationInfo.Monetizations.Last().CheckDate.ToString("d", CultureInfo.CurrentCulture)
+	</span>
+	
+	<div class="card-body d-sm-flex align-items-sm-center justify-content-sm-between flex-sm-wrap">
+		<AllTime Mark="$" Text="Total" Data="@_monetizationInfo.Total.ToString("F1")"></AllTime>
+		<AllTime Mark="$" Text="From clicks" Data="@_monetizationInfo.TotalFromClicks.ToString("F1")"></AllTime>
+		<AllTime Mark="$" Text="From banners" Data="@_monetizationInfo.TotalFromBanners.ToString("F1")"></AllTime>
+		<AllTime Mark="$" Text="From rewarded videos" Data="@_monetizationInfo.TotalFromRewardedVideos.ToString("F1")"></AllTime>
+	</div>
+	</Body>
+</CardContent>
+
+<div class="row">
+	<div class="col-sm-6">
+		@if (_monetizationInfo.DayCountryInfos != null)
+		{
+			<CardContent Header="Today, Countries">
+				<Body>
+
+				<div class="table-responsive">
+					<table class="table text-nowrap">
+						<thead>
+						<tr>
+							<th>Country</th>
+							<th>From clicks</th>
+							<th>From banners</th>
+							<th>From video</th>
+							<th>Total</th>
+						</tr>
+						</thead>
+						<tbody>
+						@foreach (var countryInfo in _monetizationInfo.DayCountryInfos)
+						{
+							<tr>
+								<td><span class="text-muted">@countryInfo.Country</span></td>
+								<td><span class="text-muted">@countryInfo.FromClicks.ToString("F1")$</span></td>
+								<td><span class="text-muted">@countryInfo.FromBanners.ToString("F1")$</span></td>
+								<td><span class="text-muted">@countryInfo.FromRewardedVideos.ToString("F1")$</span></td>
+								<td><span class="text-muted">@countryInfo.Total.ToString("F1")$</span></td>
+							</tr>
+						}
+						</tbody>
+					</table>
+				</div>
+				</Body>
+			</CardContent>
+		}
+	</div>
+	<div class="col-sm-6">
+		@if (_monetizationInfo.AllTimeCountryInfo != null)
+		{
+			<CardContent Header="All time, Countries">
+				<Body>
+
+				<div class="table-responsive">
+					<table class="table text-nowrap">
+						<thead>
+						<tr>
+							<th>Country</th>
+							<th>From clicks</th>
+							<th>From banners</th>
+							<th>From video</th>
+							<th>Total</th>
+						</tr>
+						</thead>
+						<tbody>
+						@foreach (var countryInfo in _monetizationInfo.AllTimeCountryInfo)
+						{
+							<tr>
+								<td><span class="text-muted">@countryInfo.Country</span></td>
+								<td><span class="text-muted">@countryInfo.FromClicks.ToString("F1")$</span></td>
+								<td><span class="text-muted">@countryInfo.FromBanners.ToString("F1")$</span></td>
+								<td><span class="text-muted">@countryInfo.FromRewardedVideos.ToString("F1")$</span></td>
+								<td><span class="text-muted">@countryInfo.Total.ToString("F1")$</span></td>
+							</tr>
+						}
+						</tbody>
+					</table>
+				</div>
+				</Body>
+			</CardContent>
+		}
+		
+	</div>
+</div>
+
+
+	
+<CardContent Header="Total by days">
+	<Body>
+	<div class="container vertical">
+		<div class="container vertical">
+			@if (_infosByDay != null)
+			{
+				<IgbCategoryChart Height="400px" Width="100%"
+				                  DataSource="_infosByDay"
+				                  IsHorizontalZoomEnabled="false"
+				                  IsVerticalZoomEnabled="false"
+				                  IncludedProperties="@(new string[] { "DateStr", "Total" })"
+				                  ChartType="CategoryChartType.Line"
+				                  ChartTitle=""
+				                  TitleAlignment="HorizontalAlignment.Left"
+				                  TitleLeftMargin="25"
+				                  TitleTopMargin="10"
+				                  TitleBottomMargin="10"
+				                  YAxisTitle="TWh"
+				                  YAxisTitleLeftMargin="10"
+				                  YAxisTitleRightMargin="5"
+				                  YAxisLabelLeftMargin="0">
+				</IgbCategoryChart>
+			}
+		</div>
+	</div>
+	</Body>
+</CardContent>
+
+
+<CardContent Header="All time, Types">
+	<Body>
+	<div class="container vertical">
+		<div class="options vertical">
+			<span class="legend-title"></span>
+			<div class="legend">
+				<IgbLegend @ref="Legend" Orientation="LegendOrientation.Horizontal" />
+			</div>
+		</div>
+		<div class="container vertical">
+			@if (_infosByDay != null)
+			{
+				<IgbCategoryChart Height="400px" Width="100%"
+				                  Legend="Legend"
+				                  DataSource="_infosByDay"
+				                  IncludedProperties="@(new string[] { "DateStr", "TotalFromBanners", "TotalFromClicks", "TotalFromRewardedVideos" })"
+				                  ChartType="CategoryChartType.Line"
+				                  IsHorizontalZoomEnabled="true"
+				                  IsVerticalZoomEnabled="true"
+				                  YAxisTitle="TWh"
+				                  YAxisTitleLeftMargin="10"
+				                  YAxisTitleRightMargin="5"
+				                  YAxisLabelLeftMargin="0">
+				</IgbCategoryChart>
+			}
+		</div>
+	</div>
+	</Body>
+</CardContent>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+	
+	private IgbLegend _Legend;
+	private IgbLegend Legend
+	{
+		get { return _Legend; }
+		set { _Legend = value; StateHasChanged(); }
+	}
+	
+	private IgbLegend _Legend1;
+	private IgbLegend Legend1
+	{
+		get { return _Legend1; }
+		set { _Legend1 = value; StateHasChanged(); }
+	}
+
+	private MonetizationInfo _monetizationInfo;
+	private List<DayTotalInfo> _infosByDay;
+	private List<CountryInfo> _allDaysCountryInfos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+	    
+	    IgbCategoryChartModule.Register(IgniteUIBlazor);
+	    IgbLegendModule.Register(IgniteUIBlazor);
+	    
+        var result = await HttpMonetizationRepository.GetMonetizationBy(Id);
+
+	    if (result.Status == ActionResultStatus.Success)
+	    {
+			SetData(result.Data);
+	    }
+    }
+
+	private void ClearData()
+	{
+		_monetizationInfo = null;
+		_infosByDay = null;
+		_allDaysCountryInfos = null;
+	}
+
+	private void SetData(MonetizationInfo data)
+	{
+		_monetizationInfo = data;
+		_infosByDay = data.DayTotalInfos.ToList();
+		_allDaysCountryInfos = data.AllTimeCountryInfo.ToList();
+	}
+	
+	private async Task Update()
+	{
+		ClearData();
+		var result = await HttpMonetizationRepository.GetMonetizationBy(Id);
+		
+		ActionStatusService.CheckResult(result);
+
+		if (result.Status == ActionResultStatus.Success)
+		{
+			SetData(result.Data);
+		}
+	}
+}

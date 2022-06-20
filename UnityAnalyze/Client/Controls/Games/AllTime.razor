@@ -1,0 +1,17 @@
+﻿<div class="d-flex align-items-center mb-3 mb-sm-0">
+	<div id="campaign-status-pie"><svg width="42" height="42"><g transform="translate(21,21)"><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(41, 182, 246);" d="M1.1634144591899855e-15,19A19,19 0 0,1 -10.035763324841723,-16.133302652828462L-5.017881662420861,-8.066651326414231A9.5,9.5 0 0,0 5.817072295949927e-16,9.5Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(239, 83, 80);" d="M-10.035763324841723,-16.133302652828462A19,19 0 0,1 17.35205039879773,-7.739919053684189L8.676025199398865,-3.8699595268420945A9.5,9.5 0 0,0 -5.017881662420861,-8.066651326414231Z" transform="translate(0,0)"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(129, 199, 132);" d="M17.35205039879773,-7.739919053684189A19,19 0 0,1 14.540850859600345,12.229622082421841L7.270425429800173,6.1148110412109205A9.5,9.5 0 0,0 8.676025199398865,-3.8699595268420945Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(153, 153, 153);" d="M14.540850859600345,12.229622082421841A19,19 0 0,1 5.817072295949928e-15,19L2.908536147974964e-15,9.5A9.5,9.5 0 0,0 7.270425429800173,6.1148110412109205Z" transform="translate(0,0)"></path></g></g></svg></div>
+	<div class="ml-3">
+		<h5 class="font-weight-semibold mb-0">@Data@Mark<span style="color: grey;" class="font-size-sm font-weight-normal">  @Text</span></h5>
+	</div>
+</div>
+
+@code {
+    [Parameter]
+    public string Data { get; set; }
+	
+	[Parameter]
+	public  string Text { get; set; }
+	
+	[Parameter]
+	public string Mark { get; set; }
+}

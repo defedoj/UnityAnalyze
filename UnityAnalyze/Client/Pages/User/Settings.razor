@@ -1,0 +1,47 @@
+﻿@page "/Settings"
+@using UnityAnalyze.Client.Infrastructure
+@using UnityAnalyze.Shared.ActionResult
+@using UnityAnalyze.Shared.Api
+@using UnityAnalyze.Shared.Dtos
+@inject HttpUserRepository HttpUserRepository;
+@inject ActionStatusService ActionStatusService;
+
+<CardContent Header="User Settings">
+    <Body>
+    <div class="form-group row">
+        <label class="col-form-label col-lg-3">Your key</label>
+        <div class="col-lg-9">
+            <input @bind="@_data.Token" type="text" class="form-control">
+        </div>
+    </div>
+    <button @onclick="Connect" class="btn btn-primary">Connect</button>
+    
+    @if (_userDto == null)
+    {
+        <SfSpinner Visible="true"></SfSpinner>
+    }
+    </Body>
+</CardContent>
+@code {
+    readonly ConnectToApiData _data = new ConnectToApiData();
+    private UserDto _userDto;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        _userDto = await HttpUserRepository.GetUserAsync();
+        _data.Token = _userDto.Token != null ? _userDto.Token : string.Empty;
+    }
+
+    private async Task Connect()
+    {
+        _userDto = null;
+        var response = await HttpUserRepository.ConnectToApi(_data);
+       
+        ActionStatusService.CheckResult(response);
+        
+        if(response.Status == ActionResultStatus.Failure) return;
+        _userDto = response.Data;
+    }
+}

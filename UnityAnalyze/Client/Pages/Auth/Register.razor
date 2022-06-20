@@ -1,0 +1,80 @@
+﻿@page "/register"
+@using Microsoft.AspNetCore.Components
+@using UnityAnalyze.Client.Infrastructure.Providers
+@using UnityAnalyze.Shared.Auth
+@layout AuthLayout
+@inject NavigationManager navigationManager
+@inject CustomAuthStateProvider authStateProvider
+
+
+<EditForm class="login-form" OnValidSubmit="OnSubmit" Model="registerRequest">
+    <DataAnnotationsValidator />
+    
+    <div class="card mb-0">
+        <div class="card-body">
+            <div class="text-center mb-3">
+                <i class="icon-reading icon-2x text-secondary border-secondary border-3 rounded-pill p-3 mb-3 mt-1"></i>
+                <h5 class="mb-0">Register account</h5>
+                <span class="d-block text-muted">Enter your credentials below</span>
+            </div>
+            
+            <div class="form-group form-group-feedback form-group-feedback-left">
+                <InputText id="inputEmail" class="form-control" placeholder="Username" autofocus @bind-Value="@registerRequest.Email" />
+                <ValidationMessage For="@(() => registerRequest.Email)" />
+                
+                <div class="form-control-feedback">
+                    <i class="icon-user text-muted"></i>
+                </div>
+            </div>
+            
+            <div class="form-group form-group-feedback form-group-feedback-left">
+                <InputText id="inputCompanyName" class="form-control" placeholder="Company name" autofocus @bind-Value="@registerRequest.CompanyName" />
+                <ValidationMessage For="@(() => registerRequest.CompanyName)" />
+                            
+                <div class="form-control-feedback">
+                    <i class="icon-user text-muted"></i>
+                </div>
+            </div>
+
+            <div class="form-group form-group-feedback form-group-feedback-left">
+                <InputText type="password" id="inputPassword" class="form-control" placeholder="Password" @bind-Value="@registerRequest.Password" />
+                <ValidationMessage For="@(() => registerRequest.Password)" />
+                <div class="form-control-feedback">
+                    <i class="icon-lock2 text-muted"></i>
+                </div>
+            </div>
+            
+            <div class="form-group form-group-feedback form-group-feedback-left">
+                <InputText type="password" id="inputPasswordConfirm" class="form-control" placeholder="Password Confirmation" @bind-Value="@registerRequest.PasswordConfirm" />
+                <ValidationMessage For="@(() => registerRequest.PasswordConfirm)" />
+                <div class="form-control-feedback">
+                    <i class="icon-lock2 text-muted"></i>
+                </div>
+            </div>
+            
+            <label class="text-danger">@error</label>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block">Sign up</button>
+            </div>
+        </div>
+    </div>
+
+</EditForm>
+
+@functions{
+    RegisterRequest registerRequest { get; set; } = new RegisterRequest();
+    string error { get; set; }
+    async Task OnSubmit()
+    {
+        error = null;
+        try
+        {
+            await authStateProvider.Register(registerRequest);
+            navigationManager.NavigateTo("");
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+}

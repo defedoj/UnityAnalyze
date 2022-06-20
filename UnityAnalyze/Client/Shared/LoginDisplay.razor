@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using UnityAnalyze.Client.Infrastructure.Providers
+
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthProvider
+
+<div class="order-1 order-lg-2 d-flex flex-1 flex-lg-0 justify-content-end align-items-center">
+<AuthorizeView>
+	<Authorized>
+		<ul class="navbar-nav flex-row align-items-center h-100">
+			<li class="nav-item nav-item-dropdown-lg dropdown dropdown-user h-100">
+				<a href="#" class="navbar-nav-link navbar-nav-link-toggler dropdown-toggle d-inline-flex align-items-center h-100" data-toggle="dropdown">
+					<img src="limitless/images/user-picture.jpg" class="rounded-pill" width="34" height="34" alt="">
+					<span class="d-none d-lg-inline-block ml-2">@context.User.Identity?.Name</span>
+				</a>
+        
+				<div class="dropdown-menu dropdown-menu-right wmin-lg-250 py-2">
+					<a href="/settings" class="dropdown-item d-flex py-2">
+						<div class="flex-1">
+							<div class="font-weight-semibold">Settings</div>
+							<span class="text-muted font-size-sm">Account settings</span>
+						</div>
+						<span class="btn btn-dark-100 btn-icon btn-sm text-body border-transparent rounded-pill ml-1">
+							<i class="icon-arrow-right8"></i>
+						</span>
+					</a>
+        
+					<button @onclick="BeginSignOut" class="dropdown-item d-flex py-2">
+						<div class="flex-1">
+							<div class="font-weight-semibold">Logout</div>
+							<span class="text-muted font-size-sm">Logout from account</span>
+						</div>
+						<span class="btn btn-dark-100 btn-icon btn-sm text-body border-transparent rounded-pill ml-1">
+							<i class="icon-arrow-right8"></i>
+						</span>
+					</button>
+				</div>
+			</li>
+		</ul>
+	</Authorized>
+	<NotAuthorized>
+		<ul class="navbar-nav flex-row">
+			<li class="nav-item">
+				<a href="/register" class="navbar-nav-link">
+					<i class="icon-user-plus"></i>
+					<span class="d-none d-lg-inline-block ml-2">Register</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="/login" class="navbar-nav-link">
+					<i class="icon-user-lock"></i>
+					<span class="d-none d-lg-inline-block ml-2">Login</span>
+				</a>
+			</li>
+		</ul>
+	</NotAuthorized>
+</AuthorizeView>
+</div>
+
+@code{
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await AuthProvider.Logout();
+        Navigation.NavigateTo("");
+    }
+}

@@ -1,0 +1,35 @@
+﻿@page "/my-games"
+@using Microsoft.AspNetCore.Authorization
+@using UnityAnalyze.Client.Infrastructure
+@using UnityAnalyze.Shared.ActionResult
+@using UnityAnalyze.Shared.Dtos
+@attribute [Authorize]
+@inject HttpGameRepository HttpGameRepository;
+
+
+@if (_games == null)
+    {
+        <SfSpinner Visible="true"></SfSpinner>
+    }
+else if (!_games.Any())
+{
+    <p>You don't have games yet.</p>
+}
+
+<IndexGames Games="_games" GameImageUrl="limitless/images/game.png"></IndexGames>
+
+@code {
+    private IEnumerable<ReadGameDto> _games;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        var response = await HttpGameRepository.GetByTokenAsync();
+	    
+        if (response.Status == ActionResultStatus.Success)
+        {
+            _games = response.Data;
+        }
+    }
+}

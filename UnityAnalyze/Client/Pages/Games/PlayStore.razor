@@ -1,0 +1,415 @@
+﻿@page "/game/{Id:int}/playstore"
+@using UnityAnalyze.Client.Infrastructure
+@using UnityAnalyze.Shared.Dtos
+@using System.Globalization
+@using UnityAnalyze.Shared.ActionResult
+@inject HttpPlayStoreRepository HttpPlayStoreRepository;
+@inject IIgniteUIBlazor IgniteUIBlazor
+@inject NavigationManager NavigationManager;
+@inject ActionStatusService ActionStatusService;
+@inject HttpUserRepository HttpUserRepository;
+
+@if (_playStore == null)
+{
+	<SfSpinner Visible="true"></SfSpinner>
+}else
+{
+	<CardContent Header="@_playStore.Name">
+		<Body>
+		<button @onclick="Update" class="btn btn-primary">Update</button>
+		</Body>
+	</CardContent>
+	
+	<h2>@_playStore.Name</h2>
+    <div class="row">
+    	<div class="col-sm-6">
+    		<CardContent Header="Downloads">
+    			<Body>
+    			<div class="card-body d-sm-flex align-items-sm-center justify-content-sm-between flex-sm-wrap">
+    				<div class="d-flex align-items-center mb-3 mb-sm-0">
+    					<div id="campaigns-donut"><svg width="42" height="42"><g transform="translate(21,21)"><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(102, 187, 106);" d="M1.1634144591899855e-15,19A19,19 0 0,1 -14.050144241469582,12.790365389381929L-7.025072120734791,6.3951826946909645A9.5,9.5 0 0,0 5.817072295949927e-16,9.5Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(149, 117, 205);" d="M-14.050144241469582,12.790365389381929A19,19 0 0,1 0.6493373977393208,-18.988900993577726L0.3246686988696604,-9.494450496788863A9.5,9.5 0 0,0 -7.025072120734791,6.3951826946909645Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(255, 112, 67);" d="M0.6493373977393208,-18.988900993577726A19,19 0 0,1 5.817072295949928e-15,19L2.908536147974964e-15,9.5A9.5,9.5 0 0,0 0.3246686988696604,-9.494450496788863Z"></path></g></g></svg></div>
+    					<div class="ml-3">
+    						<h5 class="font-weight-semibold mb-0">@_playStore.DownloadsInfo.TodayCount
+    							@if (_dayDelta > 0)
+    							{
+    								<span class="text-success font-size-sm font-weight-normal"><i class="icon-arrow-up12"></i> (+@_playStore.DownloadsInfo.DayDelta.ToString("F1")%)
+    								</span>
+    							}
+    							else
+    							{
+    								<span class="text-danger font-size-sm font-weight-normal"><i class="icon-arrow-down12"></i> (@_playStore.DownloadsInfo.DayDelta.ToString("F1")%)
+    								</span>
+    							}
+    						</h5>
+    						<span class="badge badge-mark border-success mr-1"></span> <span class="text-muted">Today, @DateTime.Now.ToString("t")</span>
+    					</div>
+    				</div>
+                    
+    				<div class="d-flex align-items-center mb-3 mb-sm-0">
+    					<div id="campaign-status-pie"><svg width="42" height="42"><g transform="translate(21,21)"><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(41, 182, 246);" d="M1.1634144591899855e-15,19A19,19 0 0,1 -10.035763324841723,-16.133302652828462L-5.017881662420861,-8.066651326414231A9.5,9.5 0 0,0 5.817072295949927e-16,9.5Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(239, 83, 80);" d="M-10.035763324841723,-16.133302652828462A19,19 0 0,1 17.35205039879773,-7.739919053684189L8.676025199398865,-3.8699595268420945A9.5,9.5 0 0,0 -5.017881662420861,-8.066651326414231Z" transform="translate(0,0)"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(129, 199, 132);" d="M17.35205039879773,-7.739919053684189A19,19 0 0,1 14.540850859600345,12.229622082421841L7.270425429800173,6.1148110412109205A9.5,9.5 0 0,0 8.676025199398865,-3.8699595268420945Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(153, 153, 153);" d="M14.540850859600345,12.229622082421841A19,19 0 0,1 5.817072295949928e-15,19L2.908536147974964e-15,9.5A9.5,9.5 0 0,0 7.270425429800173,6.1148110412109205Z" transform="translate(0,0)"></path></g></g></svg></div>
+    					<div class="ml-3">
+    						<h5 class="font-weight-semibold mb-0">@_playStore.DownloadsInfo.TotalCount <span style="color: grey;" class="font-size-sm font-weight-normal"> Total</span></h5>
+    						<span class="badge badge-mark border-danger mr-1"></span> <span class="text-muted">
+    							@_playStore.DownloadsInfo.Downloads.First().CheckedAt.ToString("d", CultureInfo.CurrentCulture) - @_playStore.DownloadsInfo.Downloads.Last().CheckedAt.ToString("d", CultureInfo.CurrentCulture)
+    						</span>
+    					</div>
+    				</div>
+    			</div>
+    			<div class="table-responsive">
+    				<table class="table text-nowrap">
+    					<thead>
+    					<tr>
+    						<th>Country</th>
+    						<th>Today</th>
+    						<th>Growth</th>
+    						<th>Total</th>
+    					</tr>
+    					</thead>
+    					<tbody>
+    					<tr>
+    						<td>
+    							<div class="d-flex align-items-center">
+    								<div class="mr-3">
+    									<a href="#">
+    										<img src="https://flagpedia.net/data/flags/w702/ua.png" class="rounded-circle" width="32" height="32" alt="">
+    									</a>
+    								</div>
+    								<div>
+    									<a href="#" class="text-body font-weight-semibold">Ukraine</a>
+    								</div>
+    							</div>
+    						</td>
+    						<td><span class="text-muted">@_playStore.DownloadsInfo.TodayUkraine</span></td>
+    						<td>
+    							@if (_playStore.DownloadsInfo.DayDeltaBy(Country.Ukraine) > 0)
+    							{
+    								<span class="text-success">
+    									<i class="icon-stats-growth2 mr-2"> @_playStore.DownloadsInfo.DayDeltaBy(Country.Ukraine).ToString("F1")%</i></span>
+    							}
+    							else
+    							{
+    								<span class="text-danger">
+    									<i class="icon-stats-decline2 mr-2"> @_playStore.DownloadsInfo.DayDeltaBy(Country.Ukraine).ToString("F1")%</i></span>
+    							}
+    						</td>
+    						<td><h6 class="font-weight-semibold mb-0">@_playStore.DownloadsInfo.TotalCountFromUkraine</h6></td>
+    					</tr>
+    					<tr>
+    						<td>
+    							<div class="d-flex align-items-center">
+    								<div class="mr-3">
+    									<a href="#">
+    										<img src="https://flagpedia.net/data/flags/w702/us.webp" class="rounded-circle" width="32" height="32" alt="">
+    									</a>
+    								</div>
+    								<div>
+    									<a href="#" class="text-body font-weight-semibold">USA</a>
+    								</div>
+    							</div>
+    						</td>
+    						<td><span class="text-muted">@_playStore.DownloadsInfo.TodayUsa</span></td>
+    						<td>
+    								@if (_playStore.DownloadsInfo.DayDeltaBy(Country.USA) > 0)
+    								{
+    									<span class="text-success">
+    										<i class="icon-stats-growth2 mr-2"> @_playStore.DownloadsInfo.DayDeltaBy(Country.USA).ToString("F1")%</i></span>
+    								}
+    								else
+    								{
+    									<span class="text-danger">
+    										<i class="icon-stats-decline2 mr-2"> @_playStore.DownloadsInfo.DayDeltaBy(Country.USA).ToString("F1")%</i></span>
+    								}
+    							</td>
+    						<td><h6 class="font-weight-semibold mb-0">@_playStore.DownloadsInfo.TotalCountFromUSA</h6></td>
+    					</tr>
+    					<tr>
+    						<td>
+    							<div class="d-flex align-items-center">
+    								<div class="mr-3">
+    									<a href="#">
+    										<img src="https://flagpedia.net/data/flags/w702/cn.webp" class="rounded-circle" width="32" height="32" alt="">
+    									</a>
+    								</div>
+    								<div>
+    									<a href="#" class="text-body font-weight-semibold">China</a>
+    								</div>
+    							</div>
+    						</td>
+    						<td><span class="text-muted">@_playStore.DownloadsInfo.TodayChina</span></td>
+    						<td>
+    								@if (_playStore.DownloadsInfo.DayDeltaBy(Country.China) > 0)
+    								{
+    									<span class="text-success">
+    										<i class="icon-stats-growth2 mr-2"> @_playStore.DownloadsInfo.DayDeltaBy(Country.China).ToString("F1")%</i></span>
+    								}
+    								else
+    								{
+    									<span class="text-danger">
+    										<i class="icon-stats-decline2 mr-2"> @_playStore.DownloadsInfo.DayDeltaBy(Country.China).ToString("F1")%</i></span>
+    								}
+    							</td>
+    						<td><h6 class="font-weight-semibold mb-0">@_playStore.DownloadsInfo.TotalCountFromChina</h6></td>
+    					</tr>
+    					</tbody>
+    				</table>
+    			</div>
+    
+    			</Body>
+    		</CardContent>
+    	</div>
+    	<div class="col-sm-6">
+    		<CardContent Header="Rates">
+    			<Body>
+    			<div class="card-body d-sm-flex align-items-sm-center justify-content-sm-between flex-sm-wrap">
+    				<div class="d-flex align-items-center mb-3 mb-sm-0">
+    					<div id="campaign-status-pie"><svg width="42" height="42"><g transform="translate(21,21)"><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(41, 182, 246);" d="M1.1634144591899855e-15,19A19,19 0 0,1 -10.035763324841723,-16.133302652828462L-5.017881662420861,-8.066651326414231A9.5,9.5 0 0,0 5.817072295949927e-16,9.5Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(239, 83, 80);" d="M-10.035763324841723,-16.133302652828462A19,19 0 0,1 17.35205039879773,-7.739919053684189L8.676025199398865,-3.8699595268420945A9.5,9.5 0 0,0 -5.017881662420861,-8.066651326414231Z" transform="translate(0,0)"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(129, 199, 132);" d="M17.35205039879773,-7.739919053684189A19,19 0 0,1 14.540850859600345,12.229622082421841L7.270425429800173,6.1148110412109205A9.5,9.5 0 0,0 8.676025199398865,-3.8699595268420945Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(153, 153, 153);" d="M14.540850859600345,12.229622082421841A19,19 0 0,1 5.817072295949928e-15,19L2.908536147974964e-15,9.5A9.5,9.5 0 0,0 7.270425429800173,6.1148110412109205Z" transform="translate(0,0)"></path></g></g></svg></div>
+    					<div class="ml-3">
+    						<h5 class="font-weight-semibold mb-0">@_playStore.RatesInfo.TotalCount <span style="color: grey;" class="font-size-sm font-weight-normal"> Total</span></h5>
+    						<span class="badge badge-mark border-danger mr-1"></span> <span class="text-muted">
+    							@_playStore.DownloadsInfo.Downloads.First().CheckedAt.ToString("d", CultureInfo.CurrentCulture) - @_playStore.DownloadsInfo.Downloads.Last().CheckedAt.ToString("d", CultureInfo.CurrentCulture)
+    						</span>
+    					</div>
+    				</div>
+    			</div>
+                    
+    			<div class="table-responsive">
+    				<table class="table text-nowrap">
+    					<thead>
+    					<tr class="table-active table-border-double">
+    						<td style="border-top-width: 0px !important; border-top-style: none !important; border-bottom-width: 0px !important; border-bottom-style: none !important;" colspan="5">
+    							Average: @_playStore.RatesInfo.Average.ToString("F1")
+    						</td>
+    					</tr>
+    					<tr>
+    						<th>5 stars</th>
+    						<th>4 stars</th>
+    						<th>3 stars</th>
+    						<th>2 stars</th>
+    						<th>1 star</th>
+    					</tr>
+    					</thead>
+    					<tbody>
+    					<tr>
+    						<td><span class="text-muted">@_playStore.RatesInfo.FiveStarsCount</span></td>
+    						<td><span class="text-muted">@_playStore.RatesInfo.FourStarsCount</span></td>
+    						<td><span class="text-muted">@_playStore.RatesInfo.ThreeStarsCount</span></td>
+    						<td><span class="text-muted">@_playStore.RatesInfo.TwoStarsCount</span></td>
+    						<td><span class="text-muted">@_playStore.RatesInfo.OneStarCount</span></td>
+    					</tr>
+    					</tbody>
+    				</table>
+    			</div>
+    			</Body>
+    		</CardContent>
+    	</div>
+    </div>
+    
+    <CardContent>
+    	<Body>
+    	<div class="container vertical">
+    		<div class="container vertical">
+    			@if (_dayDownloadsInfo != null)
+    			{
+    				<IgbCategoryChart Height="400px" Width="100%"
+    				                  DataSource="_dayDownloadsInfo"
+    				                  IsHorizontalZoomEnabled="false"
+    				                  IsVerticalZoomEnabled="false"
+    				                  IncludedProperties="@(new string[] { "DateStr", "Downloads" })"
+    				                  ChartType="CategoryChartType.Line"
+    				                  ChartTitle="Info by days"
+    				                  TitleAlignment="HorizontalAlignment.Left"
+    				                  TitleLeftMargin="25"
+    				                  TitleTopMargin="10"
+    				                  TitleBottomMargin="10"
+    				                  YAxisTitle="TWh"
+    				                  YAxisTitleLeftMargin="10"
+    				                  YAxisTitleRightMargin="5"
+    				                  YAxisLabelLeftMargin="0">
+    				</IgbCategoryChart>
+    			}
+    		</div>
+    	</div>
+    	</Body>
+    </CardContent>
+    
+    <CardContent Header="DownloadsChart">
+    	<Body>
+    	@if (_downloads != null)
+    	{
+    		<div class="container vertical">
+    			<div class="container vertical">
+    
+    				@if (_downloads != null)
+    				{
+					    <IgbCategoryChart Height="500px" Width="100%"
+					                      DataSource="_downloads"
+					                      ChartType="CategoryChartType.Line"
+					                      IncludedProperties="@(new string[] { "DateTimeStr", "Count" })"
+					                      IsHorizontalZoomEnabled="true"
+					                      IsVerticalZoomEnabled="true"
+					                      YAxisTitle="TWh"
+					                      YAxisTitleLeftMargin="10"
+					                      YAxisTitleRightMargin="5"
+					                      YAxisLabelLeftMargin="0">
+					    </IgbCategoryChart>
+				    }
+    			</div>
+    		</div>
+    	}
+    	
+    	</Body>
+    </CardContent>
+    
+    <CardContent>
+    	<Body>
+    	<div class="container vertical">
+            <div class="options vertical">
+    	        <span class="legend-title">Downloads by countries</span>
+    	        <div class="legend">
+    		        <IgbLegend @ref="Legend" Orientation="LegendOrientation.Horizontal" />
+    	        </div>
+            </div>
+            <div class="container vertical">
+                @if (_downloads != null)
+                {
+    	            <IgbCategoryChart Height="500px" Width="100%"
+    	                              Legend="Legend"
+    	                              DataSource="_downloads"
+    	                              ChartType="CategoryChartType.Line"
+    	                              IncludedProperties="@(new string[] { "DateTimeStr", "FromUkraine", "FromUSA", "FromChina" })"
+                                   IsHorizontalZoomEnabled="true"
+                                   IsVerticalZoomEnabled="true"
+                                   YAxisTitle="TWh"
+                                   YAxisTitleLeftMargin="10"
+                                   YAxisTitleRightMargin="5"
+                                   YAxisLabelLeftMargin="0">
+                    </IgbCategoryChart>
+                }
+            </div>
+        </div>
+    	</Body>
+    </CardContent>
+    
+    @if (_feedbacks != null)
+    {
+    	<CardContent  Header="Feedbacks">
+        	<Body>
+        	<SfGrid AllowSorting="true" DataSource="@_feedbacks" AllowPaging="true">
+	            <GridPageSettings PageSizes="true"></GridPageSettings>
+	            <GridSortSettings>
+		            <GridSortColumns>
+			            <GridSortColumn Field="ResponseStatus" Direction="SortDirection.Descending"></GridSortColumn>
+			            <GridSortColumn Field="CreatedAtString" Direction="SortDirection.Ascending"></GridSortColumn>
+		            </GridSortColumns>
+	            </GridSortSettings>
+	            <GridColumns>
+        			<GridColumn Field=@nameof(ReadFeedbackDto.CreatedAtString) HeaderText="Date" Width="120"></GridColumn>
+        			<GridColumn Field=@nameof(ReadFeedbackDto.Sender) HeaderText="Sender" Width="120"></GridColumn>
+        			<GridColumn Field=@nameof(ReadFeedbackDto.Value) HeaderText="Rate" Width="150"></GridColumn>
+        			<GridColumn Field=@nameof(ReadFeedbackDto.Comment) HeaderText="Feedback" Width="150"></GridColumn>
+		            <GridColumn Field=@nameof(ReadFeedbackDto.ResponseStatus) HeaderText="Status" Width="150">
+			            <Template>
+				            @{
+					            var status = (context as ReadFeedbackDto).ResponseStatus;
+					            if (status == ResponseStatus.Replied)
+					            {
+						            <span class="badge badge-success">@status</span>
+					            }
+					            else
+					            {
+						            <span class="badge badge-danger">@status</span>
+					            }
+				            }
+			            </Template>
+		            </GridColumn>
+        			<GridColumn HeaderText="Response" TextAlign="TextAlign.Center" Width="120"> 
+        				<Template> 
+        					@{
+        						var feedback = context as ReadFeedbackDto;
+        						<button @onclick="() => OpenDialog(feedback)"  class="btn btn-primary">Response</button>
+        					} 
+        				</Template> 
+        			</GridColumn>
+        		</GridColumns>
+        	</SfGrid>
+        	</Body>
+        </CardContent>
+    }
+    
+    <SetResponse @ref="_response" GameId="@Id" CompanyName="@_user.CompanyName"></SetResponse>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+	private SetResponse _response;
+	
+	private IgbLegend _Legend;
+	private IgbLegend Legend
+	{
+		get { return _Legend; }
+		set { _Legend = value; StateHasChanged(); }
+	}
+	
+	
+	private ReadPlayStoreDtoExtension _playStore;
+	private double _dayDelta = 0;
+
+	private List<ReadDownloadDto> _downloads;
+	private List<ReadFeedbackDto> _feedbacks;
+	private List<DayDownloadsInfo> _dayDownloadsInfo;
+	private UserDto _user;
+
+	protected override async Task OnInitializedAsync()
+    {
+		await base.OnInitializedAsync();
+
+		var result = await HttpPlayStoreRepository.GetPlayStoreAsync(Id);
+
+		if (result.Status == ActionResultStatus.Success)
+		{
+			_user = await HttpUserRepository.GetUserAsync();
+		    SetData(result.Data);
+		    
+		    IgbCategoryChartModule.Register(IgniteUIBlazor);
+		    IgbLegendModule.Register(IgniteUIBlazor);
+		    
+		    StateHasChanged();
+	    }
+    }
+
+	private void OpenDialog(ReadFeedbackDto feedback)
+	{
+		_response.ShowDialog(feedback);
+	}
+
+	private void ClearData()
+	{
+		_playStore = null;
+	}
+
+	private void SetData(ReadPlayStoreDtoExtension data)
+	{
+		_playStore = data;
+		_dayDelta = _playStore.DownloadsInfo.DayDelta;
+		_downloads = new List<ReadDownloadDto>(_playStore.DownloadsInfo.Downloads);
+		_feedbacks = _playStore.RatesInfo.Rates.Where(r => r.Feedback != null).Select(r => r.Feedback).ToList();
+		_dayDownloadsInfo = _playStore.DownloadsInfo.DayDownloadsInfos.ToList();
+	}
+
+	private async Task Update()
+	{
+		ClearData();
+		
+		var result = await HttpPlayStoreRepository.GetPlayStoreAsync(Id);
+		
+		ActionStatusService.CheckResult(result);
+		
+		if (result.Status == ActionResultStatus.Success)
+		{
+			SetData(result.Data);
+			StateHasChanged();
+		}
+	}
+}

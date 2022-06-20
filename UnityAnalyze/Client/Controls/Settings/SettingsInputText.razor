@@ -1,0 +1,26 @@
+﻿<div class="form-group row">
+		<label class="col-form-label col-lg-3">@Label <span class="text-danger">*</span></label>
+		<div class="col-lg-9">
+			<input value="@Value" @oninput="@OnInputChange" type="text" name="basic" class="form-control" placeholder="@Placeholder" aria-invalid="false">
+			<ValidationMessage For="@(() => Value)"></ValidationMessage>
+		</div>
+	</div>
+
+@code {
+    [Parameter]
+    public string Value { get; set; }
+	
+	[Parameter]
+	public string Label { get; set; }
+	
+	[Parameter]
+	public string Placeholder { get; set; }
+	
+	[Parameter]
+	public EventCallback<string> ValueChanged { get; set; }
+	private async Task OnInputChange(ChangeEventArgs args )
+	{
+		Value = (string)args.Value;
+		await ValueChanged.InvokeAsync(Value);
+	}
+}

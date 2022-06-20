@@ -1,0 +1,32 @@
+﻿<NavMenuComponent Items="_items"></NavMenuComponent>
+
+@code {
+    private List<NavMenuItem> _items;
+
+    public class NavMenuItem
+    {
+        public NavMenuItem(string url, string text, string iconClass)
+        {
+            Url = url;
+            Text = text;
+            IconClass = iconClass;
+        }
+        
+        public string Url { get; }
+        
+        public string Text { get; }
+        
+        public string IconClass { get; }
+    }
+
+    protected override void OnInitialized()
+    {
+        _items = new List<NavMenuItem>()
+        {
+            new(url: "", text: "Home", iconClass: "icon-home4"),
+            new(url: "my-games", text: "My Games", iconClass: "icon-dice"),
+            new(url: "play-store-full", text: "Play Store report", iconClass: "icon-dice"),
+            new(url: "monetization-full", text: "Monetization report", iconClass: "icon-dice"),
+        };
+    }
+}

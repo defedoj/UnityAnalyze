@@ -1,0 +1,54 @@
+﻿@using UnityAnalyze.Client.Infrastructure
+@inherits LayoutComponentBase
+@inject ActionStatusService ActionStatusService;
+
+<HeadComponent></HeadComponent>
+<HeaderComponent></HeaderComponent>
+<SfToast CssClass="z-index-top" @ref="ToastObj">
+    <ToastPosition X="Right" Y="TOP"></ToastPosition>
+</SfToast>
+
+
+<div class="page-content pt-0">
+    <div class="sidebar sidebar-light sidebar-main sidebar-expand-lg align-self-start">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <NavMenu/>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="content">
+            @Body
+        </div>
+    </div>
+
+</div>
+
+<FooterComponent></FooterComponent>
+
+@code {
+
+    private string _message = "";
+    public SfToast ToastObj { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ActionStatusService.Success += OnSuccess;
+    }
+
+    private async void OnSuccess(string message)
+    {
+        var toast = new ToastModel
+        {
+            Title = "Status",
+            Content = $"{message}",
+            CssClass = "e-toast-success"
+        };
+        
+        await ToastObj.Show(toast);
+        _message = message;
+    }
+}

@@ -1,0 +1,227 @@
+﻿@page "/monetization-full"
+@using UnityAnalyze.Client.Infrastructure
+@using UnityApi.Shared.Dtos.Monetization
+@inject HttpMonetizationRepository HttpMonetizationRepository
+@inject ActionStatusService ActionStatusService;
+
+@if (_monetizationFull == null)
+{
+    <SfSpinner Visible="true"></SfSpinner>
+}
+else
+{
+    <CardContent Header="All games monetization">
+    	<Body>
+    	<button @onclick="Update" class="btn btn-primary">Update</button>
+    	</Body>
+    </CardContent>
+	<CardContent Header="Profit today">
+		<Body>
+		<div class="card-body d-sm-flex align-items-sm-center justify-content-sm-between flex-sm-wrap">
+			<div class="d-flex align-items-center mb-3 mb-sm-0">
+				<div id="campaigns-donut"><svg width="42" height="42"><g transform="translate(21,21)"><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(102, 187, 106);" d="M1.1634144591899855e-15,19A19,19 0 0,1 -14.050144241469582,12.790365389381929L-7.025072120734791,6.3951826946909645A9.5,9.5 0 0,0 5.817072295949927e-16,9.5Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(149, 117, 205);" d="M-14.050144241469582,12.790365389381929A19,19 0 0,1 0.6493373977393208,-18.988900993577726L0.3246686988696604,-9.494450496788863A9.5,9.5 0 0,0 -7.025072120734791,6.3951826946909645Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(255, 112, 67);" d="M0.6493373977393208,-18.988900993577726A19,19 0 0,1 5.817072295949928e-15,19L2.908536147974964e-15,9.5A9.5,9.5 0 0,0 0.3246686988696604,-9.494450496788863Z"></path></g></g></svg></div>
+				<div class="ml-3">
+					<h5 class="font-weight-semibold mb-0">@_monetizationFull.ProfitToday.ToString("F1")$
+						@if (_profitDelta > 0)
+						{
+							<span class="text-success font-size-sm font-weight-normal"><i class="icon-arrow-up12"></i> (+@_profitDelta.ToString("F1")%)
+							</span>
+						}
+						else
+						{
+							<span class="text-danger font-size-sm font-weight-normal"><i class="icon-arrow-down12"></i> (@_profitDelta.ToString("F1")%)
+							</span>
+						}
+					</h5>
+					<span class="badge badge-mark border-success mr-1"></span> <span class="text-muted">Today, @DateTime.Now.ToString("t")</span>
+				</div>
+			</div>
+                    
+			<TodayInfo Mark="$" Text="From clicks" Data="@_monetizationFull.TodayFromClicks.ToString("F1")"></TodayInfo>
+			<TodayInfo Mark="$" Text="From banners" Data="@_monetizationFull.TodayFromBanners.ToString("F1")"></TodayInfo>
+			<TodayInfo Mark="$" Text="From rewarded videos" Data="@_monetizationFull.TodayFromRewardedVideo.ToString("F1")"></TodayInfo>
+		</div>
+		</Body>
+	</CardContent>
+	
+	<CardContent Header="All time">
+		<Body>
+		<div class="card-body d-sm-flex align-items-sm-center justify-content-sm-between flex-sm-wrap">
+			<div class="d-flex align-items-center mb-3 mb-sm-0">
+				<div id="campaigns-donut"><svg width="42" height="42"><g transform="translate(21,21)"><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(102, 187, 106);" d="M1.1634144591899855e-15,19A19,19 0 0,1 -14.050144241469582,12.790365389381929L-7.025072120734791,6.3951826946909645A9.5,9.5 0 0,0 5.817072295949927e-16,9.5Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(149, 117, 205);" d="M-14.050144241469582,12.790365389381929A19,19 0 0,1 0.6493373977393208,-18.988900993577726L0.3246686988696604,-9.494450496788863A9.5,9.5 0 0,0 -7.025072120734791,6.3951826946909645Z"></path></g><g class="d3-arc d3-slice-border" style="cursor: pointer;"><path style="fill: rgb(255, 112, 67);" d="M0.6493373977393208,-18.988900993577726A19,19 0 0,1 5.817072295949928e-15,19L2.908536147974964e-15,9.5A9.5,9.5 0 0,0 0.3246686988696604,-9.494450496788863Z"></path></g></g></svg></div>
+				<div class="ml-3">
+					<h5 class="font-weight-semibold mb-0">@_monetizationFull.TotalProfit.ToString("F1")$
+					</h5>
+					<span class="badge badge-mark border-success mr-1"></span> <span class="text-muted">Total</span>
+				</div>
+			</div>
+                    
+			<TotalInfo Mark="$" Text="From clicks" Data="@_monetizationFull.TotalProfitFromClicks.ToString("F1")"></TotalInfo>
+			<TotalInfo Mark="$" Text="From banners" Data="@_monetizationFull.TotalProfitFromBanners.ToString("F1")"></TotalInfo>
+			<TotalInfo Mark="$" Text="From rewarded videos" Data="@_monetizationFull.TotalProfitFromRewardedVideo.ToString("F1")"></TotalInfo>
+		</div>
+		</Body>
+	</CardContent>
+	
+	<div class="row">
+		<div class="col-sm-6">
+			<CardContent Header="Games, today">
+				<Body>
+				<div class="table-responsive">
+					<table class="table text-nowrap">
+						<thead>
+						<tr>
+							<th>Game</th>
+							<th>FromBanners, $</th>
+							<th>FromClicks, $</th>
+							<th>FromRewardedVideo, $</th>
+							<th>Total, $</th>
+						</tr>
+						</thead>
+						<tbody>
+						@foreach (var game in _monetizationFull.Games)
+						{
+							<tr>
+								<td><span class="text-muted">@game.Name</span></td>
+								<td><span class="text-muted">@game.TodayProfitFromBanners.ToString("F1")</span></td>
+								<td><span class="text-muted">@game.TodayProfitFromClicks.ToString("F1")</span></td>
+								<td><span class="text-muted">@game.TodayProfitFromRewardedVideo.ToString("F1")</span></td>
+								<td><span class="text-muted">@game.ProfitToday.ToString("F1")</span></td>
+							</tr>
+						}
+						</tbody>
+					</table>
+				</div>
+				</Body>
+			</CardContent>
+		</div>
+		<div class="col-sm-6">
+			<CardContent Header="Games all time">
+				<Body>
+				<div class="table-responsive">
+					<table class="table text-nowrap">
+						<thead>
+						<tr>
+							<th>Game</th>
+							<th>FromBanners, $</th>
+							<th>FromClicks, $</th>
+							<th>FromRewardedVideo, $</th>
+							<th>Total, $</th>
+						</tr>
+						</thead>
+						<tbody>
+						@foreach (var game in _monetizationFull.Games)
+						{
+							<tr>
+								<td><span class="text-muted">@game.Name</span></td>
+								<td><span class="text-muted">@game.TotalProfitFromBanners.ToString("F1")</span></td>
+								<td><span class="text-muted">@game.TotalProfitFromClicks.ToString("F1")</span></td>
+								<td><span class="text-muted">@game.TotalProfitFromRewardedVideo.ToString("F1")</span></td>
+								<td><span class="text-muted">@game.TotalProfit.ToString("F1")</span></td>
+							</tr>
+						}
+						</tbody>
+					</table>
+				</div>
+				</Body>
+			</CardContent>
+		</div>
+	</div>
+
+	<CardContent>
+		<Body>
+		<div class="container vertical">
+			<div class="container vertical">
+				@if (_allGamesDayInfo != null)
+				{
+					<IgbCategoryChart Height="400px" Width="100%"
+					                  DataSource="_allGamesDayInfo"
+					                  IsHorizontalZoomEnabled="false"
+					                  IsVerticalZoomEnabled="false"
+					                  IncludedProperties="@(new string[] { "DateStr", "Total" })"
+					                  ChartType="CategoryChartType.Line"
+					                  ChartTitle="Profit by days"
+					                  TitleAlignment="HorizontalAlignment.Left"
+					                  TitleLeftMargin="25"
+					                  TitleTopMargin="10"
+					                  TitleBottomMargin="10"
+					                  YAxisTitle="TWh"
+					                  YAxisTitleLeftMargin="10"
+					                  YAxisTitleRightMargin="5"
+					                  YAxisLabelLeftMargin="0">
+					</IgbCategoryChart>
+				}
+			</div>
+		</div>
+		</Body>
+	</CardContent>
+	
+	<CardContent>
+		<Body>
+		<div class="container vertical">
+			<div class="options vertical">
+				<span class="legend-title">Profit types</span>
+				<div class="legend">
+					<IgbLegend @ref="Legend" Orientation="LegendOrientation.Horizontal" />
+				</div>
+			</div>
+			<div class="container vertical">
+				@if (_allGamesDayInfo != null)
+				{
+					<IgbCategoryChart Height="500px" Width="100%"
+					                  Legend="Legend"
+					                  DataSource="_allGamesDayInfo"
+					                  ChartType="CategoryChartType.Line"
+					                  IncludedProperties="@(new string[] { "DateStr", "FromClicks", "FromRewardedVideo", "FromBanners" })"
+					                  IsHorizontalZoomEnabled="true"
+					                  IsVerticalZoomEnabled="true"
+					                  YAxisTitle="TWh"
+					                  YAxisTitleLeftMargin="10"
+					                  YAxisTitleRightMargin="5"
+					                  YAxisLabelLeftMargin="0">
+					</IgbCategoryChart>
+				}
+			</div>
+		</div>
+		</Body>
+	</CardContent>
+
+}
+
+@code {
+    private MonetizationFullInfo _monetizationFull;
+	private List<AllGamesDayInfo> _allGamesDayInfo;
+	private double _profitDelta;
+	
+	private IgbLegend _Legend;
+	private IgbLegend Legend
+	{
+		get { return _Legend; }
+		set { _Legend = value; StateHasChanged(); }
+	}
+    
+    protected override async Task OnInitializedAsync()
+    {
+	    await base.OnInitializedAsync();
+	    
+        var result = await HttpMonetizationRepository.GetFullMonetizationInfo();
+        SetDataBy(result.Data);
+    }
+
+	private void SetDataBy(MonetizationFullInfo data)
+	{
+		_monetizationFull = data;
+		_profitDelta = _monetizationFull.ProfitDelta;
+		_allGamesDayInfo = _monetizationFull.TotalFromGames.ToList();
+	}
+	
+	private async Task Update()
+	{
+		_monetizationFull = null;
+		
+		var result = await HttpMonetizationRepository.GetFullMonetizationInfo();
+		
+		ActionStatusService.CheckResult(result);
+		SetDataBy(result.Data);
+	}
+}

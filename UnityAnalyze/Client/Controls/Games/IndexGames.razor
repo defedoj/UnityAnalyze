@@ -1,0 +1,37 @@
+﻿@using UnityAnalyze.Shared.Dtos
+<div class="row">
+	@if(Games is null || !Games.Any())
+	{
+		
+	}
+	else
+	{
+		@foreach (var game in Games)
+		{
+			<a href="game/@game.Id/details" class="col-sm-6 col-xl-3">
+				<div class="card">
+					<div class="card-img-actions mx-1 mt-1">
+						<img class="card-img img-fluid" src="@GameImageUrl" alt="">
+					</div>
+
+					<div class="card-body">
+						<div class="d-flex align-items-start flex-nowrap">
+							<div>
+								<h6 style="color: black" class="font-weight-semibold mr-2">@game.Name</h6>
+								<span style="color: black">@game.Description</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</a>
+		}
+	}
+</div>
+
+@code {
+	[Parameter]
+	public IEnumerable<ReadGameDto> Games { get; set; }
+	
+	[Parameter]
+	public string GameImageUrl { get; set; }
+}

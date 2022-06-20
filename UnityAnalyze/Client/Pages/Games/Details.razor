@@ -1,0 +1,41 @@
+﻿@page "/game/{Id:int}/details"
+@using UnityAnalyze.Client.Infrastructure
+@using UnityAnalyze.Shared.Dtos
+@inject HttpGameRepository HttpGameRepository;
+
+<h2>@_gameDetails.Name</h2>
+@if (_gameDetails.AndroidGameSettings != null)
+{
+    <CardContent Header="Android Info">
+        <Body>
+            @if (_gameDetails.AndroidGameSettings.OnPlayStore)
+            {
+                <LinkTag goTo="@_goToPlayStore" Text="PlayStore" IconClass="icon-cog mr-2"></LinkTag>
+            }
+        </Body>
+    </CardContent>
+}
+
+<CardContent Header="Monetization Info">
+    <Body>
+        <LinkTag goTo="@_goToMonetization" Text="Monetization" IconClass="icon-cog mr-2"></LinkTag>
+    </Body>
+</CardContent>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    
+    private GameDetailsDto _gameDetails;
+    
+    private string _goToMonetization => $"game/{Id}/monetization";
+    private string _goToPlayStore => $"game/{Id}/playStore";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var response = await HttpGameRepository.GetGameDetails(Id);
+
+        _gameDetails = response.Data;
+    }
+}

@@ -1,0 +1,113 @@
+﻿@using UnityAnalyze.Shared.Dtos
+@using UnityAnalyze.Client.Infrastructure
+@using UnityAnalyze.Shared.ActionResult
+@inject HttpPlayStoreRepository HttpPlayStoreRepository;
+@inject ActionStatusService ActionStatusService;
+
+<SfDialog Width="500px" ShowCloseIcon="true" IsModal="true" @bind-Visible="@IsVisible">
+	<DialogTemplates>
+		<Header> Dialog </Header>
+		<Content>
+			<div class="form-group row">
+				<label class="col-form-label col-lg-2">Sender</label>
+				<div class="col-lg-10">
+					<input value="@_feedback.Sender" type="text" class="form-control" readonly="" >
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-form-label col-lg-2">Rate</label>
+				<div class="col-lg-10">
+					<input value="@_feedback.Value" type="text" class="form-control" readonly="" >
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-form-label col-lg-2">Feedback</label>
+				<div class="col-lg-10">
+					<input value="@_feedback.Comment" type="text" class="form-control" readonly="" >
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-form-label col-lg-2">Company Name</label>
+				<div class="col-lg-10">
+					<input value="@CompanyName" type="text" class="form-control" readonly="" >
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-form-label col-lg-2">Response</label>
+				<div class="col-lg-10">
+					<textarea @bind="_response.Text" rows="3" cols="3" class="form-control" placeholder="Response"></textarea>
+				</div>
+			</div>
+		</Content>
+	</DialogTemplates>
+	<DialogButtons>
+		<DialogButton Content="OK" IsPrimary="true" OnClick="@OkClick" />
+		<DialogButton Content="Cancel" OnClick="@CancelClick" />
+	</DialogButtons>
+</SfDialog>
+
+
+@code {
+	private ReadFeedbackDto _feedback;
+	private bool IsVisible { get; set; } = false;
+	private CreateResponseDto _createResponseDto;
+	private ReadResponseDto _response;
+	
+	[Parameter]
+	public int GameId { get; set; }
+	
+	[Parameter]
+	public string CompanyName { get; set; }
+
+	public void ShowDialog(ReadFeedbackDto feedback)
+	{
+		IsVisible = true;
+		_feedback = feedback;
+
+		if (_feedback.Response != null)
+		{
+			_response = new ReadResponseDto()
+			{
+				FromCompany = _feedback.Response.FromCompany,
+				Text = _feedback.Response.Text,
+			};
+		}
+		else
+		{
+			_response = new ReadResponseDto() {FromCompany = CompanyName};
+		}
+		
+		StateHasChanged();
+	}
+
+	private async void OkClick()
+	{
+		_createResponseDto = new CreateResponseDto()
+		{
+			FeedbackId = _feedback.Id,
+			GameId = GameId,
+			Response = _response,
+			Token = string.Empty
+		};
+
+		var result = await HttpPlayStoreRepository.CreateResponse(_createResponseDto);
+		
+		ActionStatusService.CheckResult(result);
+
+		if (result.Status == ActionResultStatus.Success)
+			_feedback.Response = _response;
+
+		Hide();
+	}
+
+	private void Hide()
+	{
+		IsVisible = false;
+		StateHasChanged();
+	}
+	
+	private void CancelClick()
+	{
+		Hide();
+	}
+}

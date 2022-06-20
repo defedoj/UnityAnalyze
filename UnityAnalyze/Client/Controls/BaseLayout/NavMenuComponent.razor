@@ -1,0 +1,33 @@
+﻿@inject NavigationManager NavigationManager;
+
+<ul class="nav nav-sidebar" data-nav-type="accordion">
+    @foreach (var item in Items)
+    {
+        <li class="nav-item">
+            <a href="@item.Url" class="nav-link @GetActive($"{item.Url}", NavLinkMatch.All)">
+                <i class="@item.IconClass"></i>
+                <span>@item.Text</span>
+            </a>
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<NavMenu.NavMenuItem> Items { get; set; }
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += (s, e) => StateHasChanged();
+        
+        base.OnInitialized();
+    }
+
+    bool IsActive(string href, NavLinkMatch navLinkMatch = NavLinkMatch.Prefix)
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).ToLower();
+        return navLinkMatch == NavLinkMatch.All ? relativePath == href.ToLower() : relativePath.StartsWith(href.ToLower());
+    }
+
+    string GetActive(string href, NavLinkMatch navLinkMatch = NavLinkMatch.Prefix) => IsActive(href, navLinkMatch) ? "active" : "";
+}
